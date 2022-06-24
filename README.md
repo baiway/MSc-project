@@ -1,3 +1,5 @@
-#MSc Project
+## MSc Project
 
-Uncertainty quantification of ion temperature gradient modes
+The working title of my project is _Uncertainty quantification of ion temperature gradient modes_. This page will be updated as the project progresses. 
+
+Currently (24/06/2022), I'm still getting to grips with the tools I'll be using (GitHub, EasyVVUQ and GS2).
