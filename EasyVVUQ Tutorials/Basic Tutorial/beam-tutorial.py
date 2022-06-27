@@ -116,10 +116,15 @@ def run_campaign(pce_order=2, use_files=False):
 
 if __name__ == '__main__':
     R = {}
-    for pce_order in range(1, 5):
+    max_order = 5
+    for pce_order in range(1, max_order):
         R[pce_order] = {}
         (R[pce_order]['results_df'], 
         R[pce_order]['results'], 
         R[pce_order]['times'], 
         R[pce_order]['order'], 
         R[pce_order]['number_of_samples']) = run_campaign(pce_order=pce_order, use_files=False)
+        
+        R[pce_order]['results'].plot_sobols_treemap('g1', figsize=(10, 10))
+        plt.axis('off')
+    plt.show()
