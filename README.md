@@ -1,6 +1,6 @@
 ## MSc Project
 
-The working title of my project is _Uncertainty quantification of ion temperature gradient modes_. The aim is to calculate the uncertainty in the frequency $\omega_r$ and growth rate $\gamma$ of ion temperature gradient modes calculated by the gyrokinetic code [GS2](https://gyrokinetics.gitlab.io/gs2/). I'll use the Python library [EasyVVUQ](https://easyvvuq.readthedocs.io/en/dev/) to fascilitate this. 
+The working title of my project is _Uncertainty quantification of ion temperature gradient modes_. The aim is to determine the uncertainty in the frequency $\omega_r$ and growth rate $\gamma$ of ion temperature gradient modes (ITGs) calculated by the gyrokinetic code [GS2](https://gyrokinetics.gitlab.io/gs2/). I use the Python library [EasyVVUQ](https://easyvvuq.readthedocs.io/en/dev/) to fascilitate this. 
 
 ### Running this script
 First clone this repository:
