@@ -67,14 +67,14 @@ class GS2Scan:
                 if plot_phi2: 
                     t = ds.t.data
                     phi2 = ds.phi2.squeeze().data
-                    self._plot_phi2(t, phi2, file)
+                    self._plot_phi2(t, phi2, file.replace(".out.nc", ".png"))
                 
                 if return_results:
                     result["ky"] = ds.ky.data
                     result["omega/4"] = ds.omega_average.isel(ri=0, t=-1).squeeze().data / 4
                     result["gamma"] = ds.omega_average.isel(ri=1, t=-1).squeeze().data
                     
-                    results["file"] = result
+                    results[file] = result
         
                     return results
 
@@ -144,7 +144,7 @@ class GS2Scan:
 if __name__ == "__main__":
     vary = {
         #"theta_grid_parameters::ntheta": np.arange(1, 10), 
-        "theta_grid_parameters::nperiod": np.arange(2, 8),
+        "theta_grid_parameters::nperiod": np.arange(2, 3),
         #"le_grids_knobs::ngauss": 5,
         #"le_grids_knobs::negrid": 30
     }
@@ -152,12 +152,12 @@ if __name__ == "__main__":
     myscan = GS2Scan(vary)
     myscan.write_inputs()
     myscan.run_GS2()
-    qoi = "ntheta"
+    qoi = "nperiod"
     time = datetime.datetime.now()
-    ntheta_results = myscan.get_output(qoi, plot_phi2=True, return_results=True)
+    nperiod_results = myscan.get_output(qoi, plot_phi2=True)
     
     plt.figure()
-    for filename, result in ntheta_results.items():
+    for filename, result in nperiod_results.items():
         ky = result["ky"] / np.sqrt(2)
         omega = result["omega/4"] * (-np.sqrt(2) / 2.2)
         gamma = result["gamma"] * (np.sqrt(2) / 2.2)
