@@ -137,14 +137,14 @@ class GS2Scan:
     
     @staticmethod
     def _plot_phi2(t, phi2, filename) -> None:
-        plt.figure()
+        plt.figure(1)
+        plt.clf()
         plt.plot(t, phi2)
         plt.xlabel("t [a/v_thr]")
         plt.ylabel(r"$\phi^2$" + " " + r"$[(T_r/e)^2]$")
         plt.yscale("log")
         plt.title(filename)
         plt.savefig(filename, dpi=300)
-        plt.clf()
 
     @staticmethod
     def _plot_rates(t, omega, gamma, filename) -> None:
@@ -152,14 +152,14 @@ class GS2Scan:
         omega_norm = omega / np.max(omega)
         gamma_norm = gamma / np.max(gamma)
 
-        plt.figure()
+        plt.figure(2)
+        plt.clf()
         plt.plot(t, omega_norm, label=r"$\omega_r/\omega_{r, max}$")
         plt.plot(t, gamma_norm, label=r"$\gamma/\gamma_{max}$")
         plt.xlabel("t [a/v_thr]")
         plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
         plt.title(filename)
         plt.savefig(filename, dpi=300)
-        plt.clf()
 
 if __name__ == "__main__":
     vary = {
@@ -176,7 +176,8 @@ if __name__ == "__main__":
     time = datetime.datetime.now()
     nperiod_results = myscan.get_output(qoi, plot_phi2=True)
     
-    plt.figure()
+    plt.figure(0)
+    plt.clf()
     for filename, result in nperiod_results.items():
         ky = result["ky"] / np.sqrt(2)
         omega = result["omega/4"] * (-np.sqrt(2) / 2.2)
