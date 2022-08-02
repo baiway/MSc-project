@@ -137,7 +137,7 @@ class GS2Scan:
     
     @staticmethod
     def _plot_phi2(t, phi2, filename) -> None:
-        plt.figure(1)
+        plt.figure(filename)
         plt.clf()
         plt.plot(t, phi2)
         plt.xlabel("t [a/v_thr]")
@@ -152,7 +152,7 @@ class GS2Scan:
         omega_norm = omega / np.max(omega)
         gamma_norm = gamma / np.max(gamma)
 
-        plt.figure(2)
+        plt.figure(filename)
         plt.clf()
         plt.plot(t, omega_norm, label=r"$\omega_r/\omega_{r, max}$")
         plt.plot(t, gamma_norm, label=r"$\gamma/\gamma_{max}$")
