@@ -66,13 +66,15 @@ class GS2Scan:
                 if plot_phi2: 
                     t = ds.t.data
                     phi2 = ds.phi2.squeeze().data
-                    self._plot_phi2(t, phi2, file.replace(".out.nc", "_phi2.png"))
+                    graph_name = str(file_path).replace(".out.nc", "_phi2.png")
+                    self._plot_phi2(t, phi2, graph_name)
                 
                 if plot_rates:
                     t = ds.t.data
                     omega = ds.omega_average.isel(ri=0).squeeze().data / 4
                     gamma = ds.omega_average.isel(ri=1).squeeze().data
-                    self._plot_rates(t, omega, gamma, file.replace(".out.nc", "_rates.png"))
+                    graph_name = str(file_path).replace(".out.nc", "_rates.png")
+                    self._plot_rates(t, omega, gamma, graph_name)
 
                 if return_results:
                     result["ky"] = ds.ky.data
@@ -158,6 +160,7 @@ class GS2Scan:
         plt.plot(t, gamma_norm, label=r"$\gamma/\gamma_{max}$")
         plt.xlabel("t [a/v_thr]")
         plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
+        plt.legend()
         plt.title(filename)
         plt.savefig(filename, dpi=300)
 
@@ -190,4 +193,3 @@ if __name__ == "__main__":
     plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
     plt.savefig(f"freq_and_growth_rate_{qoi}_{time}.png", dpi=300)
     plt.show()
-    plt.clf()
