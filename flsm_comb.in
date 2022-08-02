@@ -17,21 +17,28 @@
 !=================================================================
 
 !==============================
-!GENERAL PARAMETERS  
+! MODE NUMBERS 
+!==============================
+
+!&kt_grids_knobs
+! grid_option = "range" ! The general layout of the perpendicular grid.
+!/
+
+!&kt_grids_range_parameters
+! aky_min = 0.07   ! Minimum actual wave number (GS2 normalisation)
+! aky_max = 0.71   ! Maximum actual wave number (GS2 normalisation)
+! naky = 6        ! Actual number of modes
+!/
 !==============================
 
 &kt_grids_knobs
- grid_option = "range" ! The general layout of the perpendicular grid.
+ grid_option = "single" ! The general layout of the perpendicular grid.
 /
 
-!==============================
-!  
-!==============================
-&kt_grids_range_parameters
- aky_min = 0.07   ! Minimum actual wave number (GS2 normalisation)
- aky_max = 0.71   ! Maximum actual wave number (GS2 normalisation)
- naky = 6        ! Actual number of modes
+&kt_grids_single_parameters
+ aky = 0.79     ! Actual mode number (GS2 normalisation)
 /
+
 
 !==============================
 !BOUNDARY CONDITIONS  
@@ -191,7 +198,7 @@
   ! write_final_epar not specified --- If (write_ascii = T) E_parallel(theta) written to runname.eigenfunc
  write_avg_moments = .F. ! Write flux surface averaged low-order moments of g to runname.out.nc and runname.moments (if write_ascii = T)
   ! write_lorentzian not specified --- Frequency Sweep Data
- write_ascii = .true. ! Required for write_omega (I believe)
+ write_ascii = .false. ! Required for write_omega (I believe)
  write_omega = .true. ! If (write_ascii = T) instantaneous omega to output file. Very heavy output
   ! write_omavg = .false. ! If (write_ascii = T) time-averaged growth rate and frequency to the output file. Deprecated.
  write_eigenfunc = .false. ! If (write_ascii = T) Normalized phi written to runname.eigenfunc
