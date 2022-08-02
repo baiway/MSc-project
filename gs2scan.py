@@ -178,20 +178,32 @@ if __name__ == "__main__":
     myscan.write_inputs()
     myscan.run_GS2()
     qoi = "nperiod"
-    time = datetime.datetime.now()
     nperiod_results = myscan.get_output(qoi, plot_phi2=True, plot_rates=True)
     
     plt.figure(0)
     plt.clf()
+
+    omegas, gammas = [], []
+    for result in nperiod_results.values():
+        omegas.append(result["omega/4"] * (-np.sqrt(2) / 2.2))
+        gammas.append(result["gamma"] * (np.sqrt(2) / 2.2))
+
+    values = vary[myscan._get_full_key(qoi)]
+    plt.plot(values, omegas, "o-", label=r"$\omega_r/4$")
+    plt.plot(values, gammas, "o-", label=r"$\gamma$")
+
+    """
     for filename, result in nperiod_results.items():
         ky = result["ky"] / np.sqrt(2)
         omega = result["omega/4"] * (-np.sqrt(2) / 2.2)
         gamma = result["gamma"] * (np.sqrt(2) / 2.2)
         plt.plot(ky, omega, "o-", label=r"$\omega_r/4$" + f" from {filename}")
         plt.plot(ky, gamma, "o-", label=r"$\gamma$" + f" from {filename}")
+    """
 
     plt.legend()
-    plt.xlabel(r"$k_y\rho$")
+    #plt.xlabel(r"$k_y\rho$")
+    plt.xlabel(qoi)
     plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
     plt.savefig(f"./{qoi}/freq_and_growth_rate_{qoi}.png", dpi=300)
     plt.show()
