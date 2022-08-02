@@ -1,5 +1,6 @@
 #! /usr/bin/env python
-
+import matplotlib
+matplotlib.use('qtagg')
 from typing import Any
 from pathlib import Path
 import datetime
@@ -8,8 +9,6 @@ import os
 import subprocess
 import numpy as np
 import xarray as xr
-import matplotlib
-matplotlib.use('qtagg')
 import matplotlib.pyplot as plt
 from gs2uq import GS2Encoder
 
@@ -48,7 +47,7 @@ class GS2Scan:
                 subprocess.run(f"nice -n 10 mpirun -n {nproc} {gs2_bin} {file_path}", 
                                stdout=stdout, shell=True)
 
-    def get_output(self, scan_param: str = None, plot_phi2=True, return_results=True) -> dict:
+    def get_output(self, scan_param: str = None, plot_phi2=True, plot_rates=False, return_results=True) -> dict:
         if scan_param is None:
             print("You need to provide a scan parameter")
 
@@ -56,7 +55,7 @@ class GS2Scan:
         files = os.listdir(scan_dir)
         output_files = [file for file in files if ".out.nc" in file]
         
-        results = {file: None for file in output_files}
+        results = {}
 
         for file in output_files:
             file_path = scan_dir / file
@@ -67,8 +66,14 @@ class GS2Scan:
                 if plot_phi2: 
                     t = ds.t.data
                     phi2 = ds.phi2.squeeze().data
-                    self._plot_phi2(t, phi2, file.replace(".out.nc", ".png"))
+                    self._plot_phi2(t, phi2, file.replace(".out.nc", "_phi2.png"))
                 
+                if plot_rates:
+                    t = ds.t.data
+                    omega = ds.omega_average.isel(ri=0).squeeze().data / 4
+                    gamma = ds.omega_average.isel(ri=1).squeeze().data
+                    self._plot_rates(t, omega, gamma, file.replace(".out.nc", "_rates.png"))
+
                 if return_results:
                     result["ky"] = ds.ky.data
                     result["omega/4"] = ds.omega_average.isel(ri=0, t=-1).squeeze().data / 4
@@ -76,7 +81,7 @@ class GS2Scan:
                     
                     results[file] = result
         
-                    return results
+        return results
 
     def _get_full_key(self, param: str) -> str:
         for full_key in self.vary_dict.keys():
@@ -141,10 +146,25 @@ class GS2Scan:
         plt.savefig(filename, dpi=300)
         plt.clf()
 
+    @staticmethod
+    def _plot_rates(t, omega, gamma, filename) -> None:
+        # normalise 
+        omega_norm = omega / np.max(omega)
+        gamma_norm = gamma / np.max(gamma)
+
+        plt.figure()
+        plt.plot(t, omega_norm, label=r"$\omega_r/\omega_{r, max}$")
+        plt.plot(t, gamma_norm, label=r"$\gamma/\gamma_{max}$")
+        plt.xlabel("t [a/v_thr]")
+        plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
+        plt.title(filename)
+        plt.savefig(filename, dpi=300)
+        plt.clf()
+
 if __name__ == "__main__":
     vary = {
         #"theta_grid_parameters::ntheta": np.arange(1, 10), 
-        "theta_grid_parameters::nperiod": np.arange(2, 3),
+        "theta_grid_parameters::nperiod": np.arange(1, 4),
         #"le_grids_knobs::ngauss": 5,
         #"le_grids_knobs::negrid": 30
     }
@@ -161,9 +181,9 @@ if __name__ == "__main__":
         ky = result["ky"] / np.sqrt(2)
         omega = result["omega/4"] * (-np.sqrt(2) / 2.2)
         gamma = result["gamma"] * (np.sqrt(2) / 2.2)
-        plt.plot(ky, omega, "o-", label=r"$\omega}_r/4$" + f" from {filename}")
+        plt.plot(ky, omega, "o-", label=r"$\omega_r/4$" + f" from {filename}")
         plt.plot(ky, gamma, "o-", label=r"$\gamma$" + f" from {filename}")
-    
+
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
