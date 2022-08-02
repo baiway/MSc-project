@@ -36,7 +36,9 @@ class GS2Scan:
         if not Path(gs2_bin).is_file():
             raise FileExistsError(f"GS2 not found in: {gs2_bin}")
         
-        for param in self.param_names:
+        num_runs = len(self.param_names)
+        for run, param in enumerate(self.param_names):
+            print(f"Starting run {run} of {num_runs} over {param}")
             param_dir = Path(__file__).parent / param
             files = os.listdir(param_dir)
             input_files = [file for file in files if ".in" in file]
@@ -191,5 +193,5 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
-    plt.savefig(f"freq_and_growth_rate_{qoi}_{time}.png", dpi=300)
+    plt.savefig(f"./{qoi}/freq_and_growth_rate_{qoi}.png", dpi=300)
     plt.show()
