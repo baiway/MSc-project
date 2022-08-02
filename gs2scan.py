@@ -174,7 +174,7 @@ if __name__ == "__main__":
     myscan.run_GS2()
     qoi = "nperiod"
     time = datetime.datetime.now()
-    nperiod_results = myscan.get_output(qoi, plot_phi2=True)
+    nperiod_results = myscan.get_output(qoi, plot_phi2=True, plot_rates=True)
     
     plt.figure(0)
     plt.clf()
