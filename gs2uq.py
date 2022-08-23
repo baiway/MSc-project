@@ -48,6 +48,9 @@ class GS2Encoder:
                 f"the directory specified ({target_dir}) does not exist")
         
     def _log_substitution_failure(self, exception):
+        """Raise error instructing the user to review the template input file
+        and/or parameter being substituted.
+        """
         reasoning = (f"\nFailed substituting into template input file: "
                      f"{self.template_fname}.\n"
                      f"KeyError: {str(exception)}.\n")
@@ -60,26 +63,35 @@ class GS2Decoder:
     def __init__(self, target_filename):
         self.target_filename = target_filename
 
-    def sim_complete(self, run_info=None):
-        """Checks whether file `output.exit_reason` exists. 
-        If it does, the simulation has completed. 
-        Note: may need a more refined test later down the line.
+    def sim_complete(self, run_info=None) -> bool:
+        """Checks whether the simulation is complete. For this to function, the 
+        run command in run_uq.py must pipe the terminal output to a file named
+        "GS2_print.txt". See example below:
+
+        execute = ExecuteLocal("mpirun -n <nprocs> <gs2_bin> <input_file> > GS2_print.txt")
+
+        If the simulation completes successfully, GS2 will print "Run finished at <date>"
+        to the screen. Checking for "Run finished" is then a way to determine
+        whether the simuatlion completed successfully. 
+
+        Parameters
+        ----------
+        run_info: dict
+            Information about the run (used to retrieve construct the absolute path
+            to the NetCDF file that needs decoding.
         """
 
         file_to_print = self._get_output_path(run_info=run_info, 
                                                 outfile="GS2_print.txt")
         with open(file_to_print, "r") as f:
-            for last_line in f:
-                pass
-        
-        if "Run finished" in last_line:
-            return True
-        else:
-            return False
+            last_line = f.readlines()[-1]
+            
+        return ("Run finished" in last_line)
     
-    def parse_sim_output(self, run_info={}):
-        """Parses the NetCDF file and converts it to the EasyVVUQ internal dictionary based
-        format. The output has the form {"aky": [...], "omega/4": [...], "gamma": [...]}.
+    def parse_sim_output(self, run_info={}) -> dict:
+        """Parses the GS2 output file (NetCDF) and converts it to the EasyVVUQ internal 
+        dictionary based format. The output has the form 
+         {"aky": [...], "omega/4": [...], "gamma": [...]}.
         Parameters
         ----------
         run_info: dict
@@ -92,6 +104,7 @@ class GS2Decoder:
         run_dir = Path(run_info["run_dir"])
         output_filepath = run_dir / self.target_filename
 
+        # Save results as lists of values rather than NumPy arrays (required by EasyVVUQ)
         with xr.open_dataset(output_filepath, engine="netcdf4") as ds:
             results["ky"] = ds.ky.data.tolist()
             results["omega/4"] = (ds.omega_average.isel(ri=0, t=-1).squeeze().data / 4).tolist()
