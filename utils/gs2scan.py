@@ -10,7 +10,7 @@ import subprocess
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
-from gs2uq import GS2Encoder
+from ..gs2uq import GS2Encoder
 
 class GS2Scan:
     """
