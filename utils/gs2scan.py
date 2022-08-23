@@ -36,7 +36,9 @@ class GS2Scan:
         if not Path(gs2_bin).is_file():
             raise FileExistsError(f"GS2 not found in: {gs2_bin}")
         
-        for param in self.param_names:
+        num_runs = len(self.param_names)
+        for run, param in enumerate(self.param_names):
+            print(f"Starting run {run} of {num_runs} over {param}")
             param_dir = Path(__file__).parent / param
             files = os.listdir(param_dir)
             input_files = [file for file in files if ".in" in file]
@@ -66,13 +68,15 @@ class GS2Scan:
                 if plot_phi2: 
                     t = ds.t.data
                     phi2 = ds.phi2.squeeze().data
-                    self._plot_phi2(t, phi2, file.replace(".out.nc", "_phi2.png"))
+                    graph_name = str(file_path).replace(".out.nc", "_phi2.png")
+                    self._plot_phi2(t, phi2, graph_name)
                 
                 if plot_rates:
                     t = ds.t.data
                     omega = ds.omega_average.isel(ri=0).squeeze().data / 4
                     gamma = ds.omega_average.isel(ri=1).squeeze().data
-                    self._plot_rates(t, omega, gamma, file.replace(".out.nc", "_rates.png"))
+                    graph_name = str(file_path).replace(".out.nc", "_rates.png")
+                    self._plot_rates(t, omega, gamma, graph_name)
 
                 if return_results:
                     result["ky"] = ds.ky.data
@@ -137,14 +141,14 @@ class GS2Scan:
     
     @staticmethod
     def _plot_phi2(t, phi2, filename) -> None:
-        plt.figure()
+        plt.figure(filename)
+        plt.clf()
         plt.plot(t, phi2)
         plt.xlabel("t [a/v_thr]")
         plt.ylabel(r"$\phi^2$" + " " + r"$[(T_r/e)^2]$")
         plt.yscale("log")
         plt.title(filename)
         plt.savefig(filename, dpi=300)
-        plt.clf()
 
     @staticmethod
     def _plot_rates(t, omega, gamma, filename) -> None:
@@ -152,14 +156,15 @@ class GS2Scan:
         omega_norm = omega / np.max(omega)
         gamma_norm = gamma / np.max(gamma)
 
-        plt.figure()
+        plt.figure(filename)
+        plt.clf()
         plt.plot(t, omega_norm, label=r"$\omega_r/\omega_{r, max}$")
         plt.plot(t, gamma_norm, label=r"$\gamma/\gamma_{max}$")
         plt.xlabel("t [a/v_thr]")
         plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
+        plt.legend()
         plt.title(filename)
         plt.savefig(filename, dpi=300)
-        plt.clf()
 
 if __name__ == "__main__":
     vary = {
@@ -173,20 +178,32 @@ if __name__ == "__main__":
     myscan.write_inputs()
     myscan.run_GS2()
     qoi = "nperiod"
-    time = datetime.datetime.now()
-    nperiod_results = myscan.get_output(qoi, plot_phi2=True)
+    nperiod_results = myscan.get_output(qoi, plot_phi2=True, plot_rates=True)
     
-    plt.figure()
+    plt.figure(0)
+    plt.clf()
+
+    omegas, gammas = [], []
+    for result in nperiod_results.values():
+        omegas.append(result["omega/4"] * (-np.sqrt(2) / 2.2))
+        gammas.append(result["gamma"] * (np.sqrt(2) / 2.2))
+
+    values = vary[myscan._get_full_key(qoi)]
+    plt.plot(values, omegas, "o-", label=r"$\omega_r/4$")
+    plt.plot(values, gammas, "o-", label=r"$\gamma$")
+
+    """
     for filename, result in nperiod_results.items():
         ky = result["ky"] / np.sqrt(2)
         omega = result["omega/4"] * (-np.sqrt(2) / 2.2)
         gamma = result["gamma"] * (np.sqrt(2) / 2.2)
         plt.plot(ky, omega, "o-", label=r"$\omega_r/4$" + f" from {filename}")
         plt.plot(ky, gamma, "o-", label=r"$\gamma$" + f" from {filename}")
+    """
 
     plt.legend()
-    plt.xlabel(r"$k_y\rho$")
+    #plt.xlabel(r"$k_y\rho$")
+    plt.xlabel(qoi)
     plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
-    plt.savefig(f"freq_and_growth_rate_{qoi}_{time}.png", dpi=300)
+    plt.savefig(f"./{qoi}/freq_and_growth_rate_{qoi}.png", dpi=300)
     plt.show()
-    plt.clf()
