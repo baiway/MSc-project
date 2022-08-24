@@ -155,7 +155,7 @@ if __name__ == "__main__":
     gamma_std = R['results'].describe("gamma", "std") * (np.sqrt(2) / 2.2)
 
     # Plot the calculated rates: mean with std deviation
-    plt.figure()
+    plt.figure(1)
     plt.plot(ky, omega, "o-", color="orange", label=r"$\overline{\omega}_r/4 \pm \sigma_{\omega_r/4}$")
     plt.plot(ky, omega - omega_std, "--", color="orange")
     plt.plot(ky, omega + omega_std, "--", color="orange")
@@ -179,49 +179,93 @@ if __name__ == "__main__":
     plt.clf()
 
     # Plot the first order Sobol indices for omega
-    plt.figure()
+    plt.figure(2)
     sobols_first_omega = R["results"].sobols_first()["omega/4"] # dict of Sobol indices at each ky
     for param in sobols_first_omega.keys():
-        plt.plot(ky, sobols_first_omega[param], label=param)
+        plt.plot(ky, sobols_first_omega[param], "o-", label=param)
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("First order Sobol index")
-    plt.title("First order Sobol indice for " + r"$\omega_r/4$")
+    plt.title("First order Sobol indices for " + r"$\omega_r/4$")
     plt.savefig("sobols_first_omega.png", dpi=300)
     plt.show()
     plt.clf()
 
     # Plot the first order Sobol indices for gamma
-    plt.figure()
-    sobols_first_omega = R["results"].sobols_first()["gamma"] # dict of Sobol indices at each ky
-    for param in sobols_first_omega.keys():
-        plt.plot(ky, sobols_first_omega[param], label=param)
+    plt.figure(3)
+    sobols_first_gamma = R["results"].sobols_first()["gamma"] # dict of Sobol indices at each ky
+    for param in sobols_first_gamma.keys():
+        plt.plot(ky, sobols_first_gamma[param], "o-", label=param)
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("First order Sobol index")
-    plt.title("First order Sobol indice for " + r"$\gamma$")
+    plt.title("First order Sobol indices for " + r"$\gamma$")
     plt.savefig("sobols_first_gamma.png", dpi=300)
     plt.show()
     plt.clf()
 
-"""
-# plot the second Sobol results
-plt.figure()
-for k1 in results.sobols_second()['te'].keys():
-    for k2 in results.sobols_second()['te'][k1].keys():
-        plt.plot(rho, results.sobols_second()['te'][k1][k2], label=k1+'/'+k2)
-plt.legend(loc=0)
-plt.xlabel('rho [m]')
-plt.ylabel('sobols_second')
-plt.title(my_campaign.campaign_dir+'\n');
+    # Plot the total Sobol results for omega
+    plt.figure(4)
+    sobols_total_omega = R["results"].sobols_total()["omega/4"]
+    for param in sobols_total_omega.keys(): 
+        plt.plot(ky, sobols_total_omega[param], label=param)
+    plt.legend()
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("Total Sobol index")
+    plt.title("First order Sobol indices for " + r"$\omega_r/4$")
+    plt.savefig("sobols_total_omega.png", dpi=300)
+    plt.show()
+    plt.clf()
 
-# plot the total Sobol results
+    # Plot the total Sobol results for gamma
+    plt.figure(5)
+    sobols_total_gamma = R["results"].sobols_total()["gamma"]
+    for param in sobols_total_gamma.keys(): 
+        plt.plot(ky, sobols_total_gamma[param], label=param)
+    plt.legend()
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("Total Sobol index")
+    plt.title("First order Sobol indices for " + r"$\gamma$")
+    plt.savefig("sobols_total_gamma.png", dpi=300)
+    plt.show()
+    plt.clf()
+
+    # Plot the distribution functions for gamma
+    # note: I'd like to only do this for the maximum growth rate
+    plt.figure(6)
+    distributions = R["results"].raw_data["output_distributions"]["gamma"].samples
+    for i, D in enumerate(distributions):
+        pdf_kde_samples = cp.GaussianKDE(D)
+        _gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
+        plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-", alpha=0.25)
+        plt.loglog(R["results"].describe("gamma", "mean")[i], pdf_kde_samples.pdf(R["results"].describe("gamma", "mean")[i]), "bo")
+        """
+        plt.loglog(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i], pdf_kde_samples.pdf(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i]), 'b*')
+        plt.loglog(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i], pdf_kde_samples.pdf(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i]), 'b*')
+        plt.loglog(results.describe('te', '10%')[i],  pdf_kde_samples.pdf(results.describe('te', '10%')[i]), 'b+')
+        plt.loglog(results.describe('te', '90%')[i],  pdf_kde_samples.pdf(results.describe('te', '90%')[i]), 'b+')
+        plt.loglog(results.describe('te', '1%')[i],  pdf_kde_samples.pdf(results.describe('te', '1%')[i]), 'bs')
+        plt.loglog(results.describe('te', '99%')[i],  pdf_kde_samples.pdf(results.describe('te', '99%')[i]), 'bs')
+        """
+    plt.xlabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
+    plt.ylabel("Distribution function")
+    plt.title("Distribution function for " + r"$\gamma$")
+    plt.savefig('distribution_functions.png')
+    plt.show()
+    plt.clf()
+
+
+
+"""
+# plot the second Sobol results (replace "omega/4" in keys with "gamma" for growth rate)
 plt.figure()
-for k in results.sobols_total()['te'].keys(): plt.plot(rho, results.sobols_total()['te'][k], label=k)
-plt.legend(loc=0)
-plt.xlabel('rho [m]')
-plt.ylabel('sobols_total')
-plt.title(my_campaign.campaign_dir);
+for k1 in R["results"].sobols_second()["omega/4"].keys():
+    for k2 in results.sobols_second()["omega/4"][k1].keys():
+        plt.plot(rho, results.sobols_second()["omega/4"][k1][k2], label=k1+"/"+k2)
+plt.legend()
+plt.xlabel(r"$k_y\rho$")
+plt.ylabel("Second order Sobol index")
+plt.title("Second order Sobol indice for " + r"$\omega_r/4$");
 
 # plot the distributions
 plt.figure()
