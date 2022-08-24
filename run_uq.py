@@ -95,8 +95,9 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     print(f"Time for phase 2 (drawing samples) = {times[2]:.2f} s")
 
     # Execute the campaign
+    # ensure nsamples * nprocs < number of cores if sequential=False
     time_start = time.time()
-    campaign.execute(sequential=True).collate(progress_bar=True)     # ensure nsamples * nprocs < number of cores
+    campaign.execute(sequential=True).collate(progress_bar=True)     
     time_end = time.time()
     times[3] = time_end - time_start
     print(f"Time for phase 3 (executing campaign) = {times[3]:.2f} s")
@@ -137,8 +138,8 @@ if __name__ == "__main__":
     R["pce_order"], 
     R["number_of_samples"]) = run_campaign(pce_order=2, nprocs=8)
 
-    # I think (?) EasyVVUQ returns these as np.arrays, not lists
-    ky_dim = R["results"].describe("ky", "mean") / np.sqrt(2)
+    # Extract results using Dimits normalisation, not GS2's
+    ky = R["results"].describe("ky", "mean") / np.sqrt(2)
     omega = R["results"].describe("omega/4", "mean") * (-np.sqrt(2) / 2.2)
     omega_std = R["results"].describe("omega/4", "std") * (np.sqrt(2) / 2.2)
     gamma = R["results"].describe("gamma", "mean") * (np.sqrt(2) / 2.2)
@@ -146,14 +147,14 @@ if __name__ == "__main__":
 
     # Plot the calculated rates: mean with std deviation
     plt.figure()
-    plt.plot(ky_dim, omega, "o-", color="orange", label=r"$\overline{\omega}_r/4 \pm \sigma_{\omega_r/4}$")
-    plt.plot(ky_dim, omega - omega_std, "--", color="orange")
-    plt.plot(ky_dim, omega + omega_std, "--", color="orange")
-    plt.fill_between(ky_dim, omega - omega_std, omega + omega_std, color="orange", alpha=0.4)
-    plt.plot(ky_dim, gamma, "o-", color="blue", label=r"$\overline{\gamma} \pm \sigma_\gamma$")
-    plt.plot(ky_dim, gamma - gamma_std, "--", color="blue")
-    plt.plot(ky_dim, gamma + gamma_std, "--", color="blue")
-    plt.fill_between(ky_dim, gamma - gamma_std, gamma + gamma_std, color="blue", alpha=0.2)
+    plt.plot(ky, omega, "o-", color="orange", label=r"$\overline{\omega}_r/4 \pm \sigma_{\omega_r/4}$")
+    plt.plot(ky, omega - omega_std, "--", color="orange")
+    plt.plot(ky, omega + omega_std, "--", color="orange")
+    plt.fill_between(ky, omega - omega_std, omega + omega_std, color="orange", alpha=0.4)
+    plt.plot(ky, gamma, "o-", color="blue", label=r"$\overline{\gamma} \pm \sigma_\gamma$")
+    plt.plot(ky, gamma - gamma_std, "--", color="blue")
+    plt.plot(ky, gamma + gamma_std, "--", color="blue")
+    plt.fill_between(ky, gamma - gamma_std, gamma + gamma_std, color="blue", alpha=0.2)
     """
     plt.plot(rho, Te_10, 'b:', label='10 and 90 percentiles')
     plt.plot(rho, Te_90, 'b:')
@@ -168,19 +169,29 @@ if __name__ == "__main__":
     plt.show()
     plt.clf()
 
-    # Plot the first Sobol results
-    #plt.figure()
-    #for k in results.sobols_first()['te'].keys(): plt.plot(rho, results.sobols_first()['te'][k], label=k)
+    # Plot the first order Sobol indices for omega
+    plt.figure()
+    sobols_first_omega = R["results"].sobols_first()["omega/4"] # dict of Sobol indices at each ky
+    for param in sobols_first_omega.keys():
+        plt.plot(ky, sobols_first_omega[param], label=param)
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("First order Sobol index")
+    plt.savefig("sobols_first_omega.png", dpi=300)
+    plt.show()
+    plt.clf()
+
+    # Plot the first order Sobol indices for gamma
+    plt.figure()
+    sobols_first_omega = R["results"].sobols_first()["omega/4"] # dict of Sobol indices at each ky
+    for param in sobols_first_omega.keys():
+        plt.plot(ky, sobols_first_omega[param], label=param)
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("First order Sobol index")
+    plt.savefig("sobols_first_gamma.png", dpi=300)
+    plt.show()
+    plt.clf()
 
 """
-# plot the first Sobol results
-plt.figure()
-for k in results.sobols_first()['te'].keys(): plt.plot(rho, results.sobols_first()['te'][k], label=k)
-plt.legend(loc=0)
-plt.xlabel('rho [m]')
-plt.ylabel('sobols_first')
-plt.title(my_campaign.campaign_dir);
-
 # plot the second Sobol results
 plt.figure()
 for k1 in results.sobols_second()['te'].keys():
