@@ -191,8 +191,21 @@ if __name__ == "__main__":
     plt.show()
     plt.clf()
 
-    # Plot the total Sobol results for omega
+    # Plot the first order Sobol indices for gamma
     plt.figure(3)
+    sobols_first_gamma = R["results"].sobols_first()["gamma"] # dict of Sobol indices at each ky
+    for param in sobols_first_gamma.keys():
+        plt.plot(ky, sobols_first_gamma[param], "o-", label=param)
+    plt.legend()
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("First order Sobol index")
+    plt.title("First order Sobol indices for " + r"$\gamma$")
+    plt.savefig("sobols_first_gamma.png", dpi=300)
+    plt.show()
+    plt.clf()
+
+    # Plot the total Sobol results for omega
+    plt.figure(4)
     sobols_total_omega = R["results"].sobols_total()["omega/4"]
     for param in sobols_total_omega.keys(): 
         plt.plot(ky, sobols_total_omega[param], label=param)
@@ -201,19 +214,6 @@ if __name__ == "__main__":
     plt.ylabel("Total Sobol index")
     plt.title("First order Sobol indices for " + r"$\omega_r/4$")
     plt.savefig("sobols_total_omega.png", dpi=300)
-    plt.show()
-    plt.clf()
-
-    # Plot the first order Sobol indices for gamma
-    plt.figure(4)
-    sobols_first_gamma = R["results"].sobols_first()["gamma"] # dict of Sobol indices at each ky
-    for param in sobols_first_gamma.keys():
-        plt.plot(ky, sobols_first_gamma[param], "o-", label=param)
-    plt.legend()
-    plt.xlabel(r"$k_y\rho$")
-    plt.ylabel("First order Sobol index")
-    plt.title("First order Sobol indices for " + r"$\gamma$")
-    plt.savefig("sobols_total_gamma.png", dpi=300)
     plt.show()
     plt.clf()
 
