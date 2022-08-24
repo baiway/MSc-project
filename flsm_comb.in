@@ -20,24 +20,24 @@
 ! MODE NUMBERS 
 !==============================
 
-!&kt_grids_knobs
-! grid_option = "range" ! The general layout of the perpendicular grid.
-!/
+&kt_grids_knobs
+ grid_option = "range" ! The general layout of the perpendicular grid.
+/
 
-!&kt_grids_range_parameters
-! aky_min = 0.07   ! Minimum actual wave number (GS2 normalisation)
-! aky_max = 0.71   ! Maximum actual wave number (GS2 normalisation)
-! naky = 6        ! Actual number of modes
-!/
+&kt_grids_range_parameters
+ aky_min = 0.07   ! Minimum actual wave number (GS2 normalisation)
+ aky_max = 0.85   ! Maximum actual wave number (GS2 normalisation)
+ naky = 10        ! Actual number of modes
+/
 !==============================
 
-&kt_grids_knobs
- grid_option = "single" ! The general layout of the perpendicular grid.
-/
+!&kt_grids_knobs
+! grid_option = "single" ! The general layout of the perpendicular grid.
+!/
 
-&kt_grids_single_parameters
- aky = 0.85     ! Actual mode number (GS2 normalisation)
-/
+!&kt_grids_single_parameters
+! aky = 0.85     ! Actual mode number (GS2 normalisation)
+!/
 
 
 !==============================
@@ -105,7 +105,7 @@
 !==============================
 &le_grids_knobs
  ngauss = 5 ! Number of untrapped pitch-angles moving in one direction along field line.
- negrid = 55 ! Total number of energy grid points
+ negrid = 45 ! Total number of energy grid points
 /
 
 !==============================
@@ -208,7 +208,7 @@
  nsave = -1 ! Write restart files every nsave timesteps
  nwrite = 100 ! Output diagnostic data every nwrite
  navg = 50 ! Any time averages performed over navg
- omegatol = 0.0001 ! The convergence has to be better than one part in 1/omegatol
+ omegatol = 0.001 ! The convergence has to be better than one part in 1/omegatol
  omegatinst = 500.0 ! Recommended value: 500.
  save_for_restart = .false. ! Write restart files.
   ! write_flux_line not specified --- 
