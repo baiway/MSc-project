@@ -212,7 +212,7 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("Total Sobol index")
-    plt.title("First order Sobol indices for " + r"$\omega_r/4$")
+    plt.title("Total Sobol indices for " + r"$\omega_r/4$")
     plt.savefig("sobols_total_omega.png", dpi=300)
     plt.show()
     plt.clf()
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("Total Sobol index")
-    plt.title("First order Sobol indices for " + r"$\gamma$")
+    plt.title("Total Sobol indices for " + r"$\gamma$")
     plt.savefig("sobols_total_gamma.png", dpi=300)
     plt.show()
     plt.clf()
@@ -233,13 +233,19 @@ if __name__ == "__main__":
     # Plot the distribution functions for gamma
     # note: I'd like to only do this for the maximum growth rate
     plt.figure(6)
-    distributions = R["results"].raw_data["output_distributions"]["gamma"].samples
+    i = np.argmax(gamma)
+    distribution = R["results"].raw_data["output_distributions"]["gamma"].samples[i]
+    pdf_kde_samples = cp.GaussianKDE(distribution)
+    _gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
+    plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-")
+    plt.loglog(gamma[i], pdf_kde_samples.pdf(gamma[i]), "bo")
+    """
     for i, D in enumerate(distributions):
         pdf_kde_samples = cp.GaussianKDE(D)
         _gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
         plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-", alpha=0.25)
         plt.loglog(R["results"].describe("gamma", "mean")[i], pdf_kde_samples.pdf(R["results"].describe("gamma", "mean")[i]), "bo")
-        """
+        
         plt.loglog(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i], pdf_kde_samples.pdf(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i]), 'b*')
         plt.loglog(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i], pdf_kde_samples.pdf(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i]), 'b*')
         plt.loglog(results.describe('te', '10%')[i],  pdf_kde_samples.pdf(results.describe('te', '10%')[i]), 'b+')
@@ -249,8 +255,8 @@ if __name__ == "__main__":
         """
     plt.xlabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
     plt.ylabel("Distribution function")
-    plt.title("Distribution function for " + r"$\gamma$")
-    plt.savefig('distribution_functions.png')
+    plt.title("Distribution function for max. " + r"$\gamma$")
+    plt.savefig('distribution_function.png')
     plt.show()
     plt.clf()
 
