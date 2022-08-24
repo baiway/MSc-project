@@ -26,8 +26,8 @@
 
 &kt_grids_range_parameters
  aky_min = 0.07   ! Minimum actual wave number (GS2 normalisation)
- aky_max = 0.85   ! Maximum actual wave number (GS2 normalisation)
- naky = 10        ! Actual number of modes
+ aky_max = 0.71   ! Maximum actual wave number (GS2 normalisation)
+ naky = 5        ! Actual number of modes
 /
 !==============================
 
