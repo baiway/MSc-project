@@ -21,8 +21,8 @@ def params():
                     "default": default}
         }
     where `group` and `param` are the names of the group and parameter in the GS2 Namelist 
-    (see: https://gyrokinetics.gitlab.io/gs2/page/namelists/index.html). Only `type` and `default`
-    are required. 
+    See: https://gyrokinetics.gitlab.io/gs2/page/namelists/index.html 
+    Only `type` and `default` are required by EasyVVUQ.
     """
     return {
         "species_parameters_1::fprim": {
@@ -54,9 +54,16 @@ def vary():
     
 
 def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents/gs2/bin/gs2"):
-    """Main UQ loop
-     > add to this
+    """Main UQ loop. Sets up the campaign, the encoder and decoder,
+    and tells EasyVVUQ how to execute EasyVVUQ.
+
+    Here I am using polynomial chaos expansion (PCE) to sample the parameter space.
+
+    Be sure to set `nprocs` to a suitable value and `gs2_bin` to your own GS2 bin.
+
+    For more info on UQ, see Section 2 of https://onlinelibrary.wiley.com/doi/full/10.1002/adts.201900246 
     """
+
     times = np.zeros(7)
     time_start = time.time()
     time_start_whole = time_start
@@ -130,6 +137,8 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
 
 
 if __name__ == "__main__":
+    """ Run the campaign and plot results.
+    """
     R = {}
 
     (R["results_df"], 
