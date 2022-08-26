@@ -52,7 +52,6 @@ def vary():
         "species_parameters_1::tprim":    cp.Uniform(0.8 * 6.9, 1.2 * 6.9)
     }
     
-
 def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents/gs2/bin/gs2"):
     """Main UQ loop. Sets up the campaign, the encoder and decoder,
     and tells EasyVVUQ how to execute EasyVVUQ.
@@ -111,7 +110,7 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
 
     # Get results
     time_start = time.time()
-    results_df = campaign.get_collation_result()
+    results_df = campaign.get_collation_result()    # results dataframe (not used)
     time_end = time.time()
     times[4] = time_end - time_start
     print(f"Time for phase 4 (getting results) = {times[4]:.2f} s")
@@ -123,9 +122,31 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     times[5] = time_end - time_start
     print(f"Time for phase 5 (post processing) = {times[5]:.2f} s")
 
-    # Save results
+    # Extract and pickle results using Dimits normalisation (not GS2's)
     time_start = time.time()
-    pickle.dump(results, open("GS2_ITG_results.pickle", "bw"))
+    ky = results.describe("ky", "mean") / np.sqrt(2)
+    omega = results.describe("omega/4", "mean") * (-np.sqrt(2) / 2.2)
+    omega_std = results.describe("omega/4", "std") * (np.sqrt(2) / 2.2)
+    gamma = results.describe("gamma", "mean") * (np.sqrt(2) / 2.2)
+    gamma_std = results.describe("gamma", "std") * (np.sqrt(2) / 2.2)
+    sobols_first_omega = results.sobols_first()["omega/4"]
+    sobols_first_gamma = results.sobols_first()["gamma"]
+    sobols_total_omega = results.sobols_total()["omega/4"]
+    sobols_total_gamma = results.sobols_total()["gamma"]
+
+    processed_results = {"ky": ky,
+                         "omega": omega,
+                         "omega_std": omega_std,
+                         "gamma": gamma,
+                         "gamma_std": gamma_std,
+                         "sobols_first_omega": sobols_first_omega, 
+                         "sobols_first_gamma": sobols_first_gamma,
+                         "sobols_total_omega": sobols_total_omega,
+                         "sobols_total_gamma": sobols_total_gamma}
+
+    with open("processed_results.pickle", "wb") as f:
+        pickle.dump(processed_results, f)
+
     time_end = time.time()
     times[6] = time_end - time_start
     print(f"Time for phase 6 (saving results) = {times[6]:.2f} s")
@@ -133,11 +154,11 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     times[0] = time_end - time_start_whole
     print(f"Total time taken = {times[0]:.2f} s")
 
-    return results_df, results, times, pce_order, campaign.get_active_sampler().count
-
+    return results_df, processed_results, times, pce_order, campaign.get_active_sampler().count
 
 if __name__ == "__main__":
-    """ Run the campaign and plot results.
+    """ Run the EasyVVUQ campaign and plot results (means, stds, first and total Sobol indices). 
+    Be sure to set `pce_order` and `nprocs` to suitable values. 
     """
     R = {}
 
@@ -145,14 +166,22 @@ if __name__ == "__main__":
     R["results"], 
     R["times"], 
     R["pce_order"], 
-    R["number_of_samples"]) = run_campaign(pce_order=2, nprocs=16)
+    R["number_of_samples"]) = run_campaign(pce_order=3, nprocs=16)
 
-    # Extract results using Dimits normalisation, not GS2's
-    ky = R["results"].describe("ky", "mean") / np.sqrt(2)
-    omega = R["results"].describe("omega/4", "mean") * (-np.sqrt(2) / 2.2)
-    omega_std = R["results"].describe("omega/4", "std") * (np.sqrt(2) / 2.2)
-    gamma = R["results"].describe("gamma", "mean") * (np.sqrt(2) / 2.2)
-    gamma_std = R["results"].describe("gamma", "std") * (np.sqrt(2) / 2.2)
+    # Extract results
+    # if loading results from file, use:
+    # with open("processed_results.pickle", "rb") as f:
+    #   R["results"] = pickle.load(f)
+    ky = R["results"]["ky"]
+    omega = R["results"]["omega"]
+    omega_std = R["results"]["omega_std"]
+    gamma = R["results"]["gamma"]
+    gamma_std = R["results"]["gamma_std"]
+    sobols_first_omega = R["results"]["sobols_first_omega"]
+    sobols_first_gamma = R["results"]["sobols_first_gamma"]
+    sobols_total_omega = R["results"]["sobols_total_omega"]
+    sobols_total_gamma = R["results"]["sobols_total_gamma"]
+
 
     # Plot the calculated rates: mean with std deviation
     plt.figure(1)
@@ -164,103 +193,71 @@ if __name__ == "__main__":
     plt.plot(ky, gamma - gamma_std, "--", color="blue")
     plt.plot(ky, gamma + gamma_std, "--", color="blue")
     plt.fill_between(ky, gamma - gamma_std, gamma + gamma_std, color="blue", alpha=0.2)
-    """
-    plt.plot(rho, Te_10, 'b:', label='10 and 90 percentiles')
-    plt.plot(rho, Te_90, 'b:')
-    plt.fill_between(rho, Te_10, Te_90, color='b', alpha=0.1)
-    plt.fill_between(rho, Te_min, Te_max, color='b', alpha=0.05)
-    """
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
-
     plt.savefig("freq_and_growth_rate_stds.png", dpi=300)
-    plt.show()
-    plt.clf()
 
-    # Plot the first order Sobol indices for omega
+    # Plot the first order Sobol indices for omega; each key in sobols_first_omega
+    # is a parameter like "species_parameters_1::fprim" (group::parameter).
     plt.figure(2)
-    sobols_first_omega = R["results"].sobols_first()["omega/4"] # dict of Sobol indices at each ky
     for param in sobols_first_omega.keys():
-        plt.plot(ky, sobols_first_omega[param], "o-", label=param)
+        plt.plot(ky, sobols_first_omega[param], "o-", label=param.split("::")[1])
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("First order Sobol index")
     plt.title("First order Sobol indices for " + r"$\omega_r/4$")
     plt.savefig("sobols_first_omega.png", dpi=300)
-    plt.show()
-    plt.clf()
 
     # Plot the first order Sobol indices for gamma
     plt.figure(3)
-    sobols_first_gamma = R["results"].sobols_first()["gamma"] # dict of Sobol indices at each ky
     for param in sobols_first_gamma.keys():
-        plt.plot(ky, sobols_first_gamma[param], "o-", label=param)
+        plt.plot(ky, sobols_first_gamma[param], "o-", label=param.split("::")[1])
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("First order Sobol index")
     plt.title("First order Sobol indices for " + r"$\gamma$")
     plt.savefig("sobols_first_gamma.png", dpi=300)
-    plt.show()
-    plt.clf()
 
     # Plot the total Sobol results for omega
     plt.figure(4)
-    sobols_total_omega = R["results"].sobols_total()["omega/4"]
     for param in sobols_total_omega.keys(): 
-        plt.plot(ky, sobols_total_omega[param], label=param)
+        plt.plot(ky, sobols_total_omega[param], "o-", label=param.split("::")[1])
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("Total Sobol index")
     plt.title("Total Sobol indices for " + r"$\omega_r/4$")
     plt.savefig("sobols_total_omega.png", dpi=300)
-    plt.show()
-    plt.clf()
 
     # Plot the total Sobol results for gamma
     plt.figure(5)
-    sobols_total_gamma = R["results"].sobols_total()["gamma"]
     for param in sobols_total_gamma.keys(): 
-        plt.plot(ky, sobols_total_gamma[param], label=param)
+        plt.plot(ky, sobols_total_gamma[param], "o-", label=param.split("::")[1])
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("Total Sobol index")
     plt.title("Total Sobol indices for " + r"$\gamma$")
     plt.savefig("sobols_total_gamma.png", dpi=300)
+
     plt.show()
-    plt.clf()
-
-    # Plot the distribution functions for gamma
-    # note: I'd like to only do this for the maximum growth rate
-    plt.figure(6)
-    i = np.argmax(gamma)
-    distribution = R["results"].raw_data["output_distributions"]["gamma"].samples[i]
-    pdf_kde_samples = cp.GaussianKDE(distribution)
-    _gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
-    plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-")
-    plt.loglog(gamma[i], pdf_kde_samples.pdf(gamma[i]), "bo")
-    """
-    for i, D in enumerate(distributions):
-        pdf_kde_samples = cp.GaussianKDE(D)
-        _gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
-        plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-", alpha=0.25)
-        plt.loglog(R["results"].describe("gamma", "mean")[i], pdf_kde_samples.pdf(R["results"].describe("gamma", "mean")[i]), "bo")
-        
-        plt.loglog(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i], pdf_kde_samples.pdf(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i]), 'b*')
-        plt.loglog(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i], pdf_kde_samples.pdf(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i]), 'b*')
-        plt.loglog(results.describe('te', '10%')[i],  pdf_kde_samples.pdf(results.describe('te', '10%')[i]), 'b+')
-        plt.loglog(results.describe('te', '90%')[i],  pdf_kde_samples.pdf(results.describe('te', '90%')[i]), 'b+')
-        plt.loglog(results.describe('te', '1%')[i],  pdf_kde_samples.pdf(results.describe('te', '1%')[i]), 'bs')
-        plt.loglog(results.describe('te', '99%')[i],  pdf_kde_samples.pdf(results.describe('te', '99%')[i]), 'bs')
-        """
-    plt.xlabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
-    plt.ylabel("Distribution function")
-    plt.title("Distribution function for max. " + r"$\gamma$")
-    plt.savefig('distribution_function.png')
-    plt.show()
-    plt.clf()
 
 
+"""
+# Plot the distribution functions for gamma
+# note: I'd like to only do this for the maximum growth rate
+plt.figure(6)
+i = np.argmax(gamma)
+distribution = R["results"].raw_data["output_distributions"]["gamma"].samples[i]
+pdf_kde_samples = cp.GaussianKDE(distribution)
+_gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
+plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-")
+plt.loglog(gamma[i], pdf_kde_samples.pdf(gamma[i]), "bo")
+
+plt.xlabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
+plt.ylabel("Distribution function")
+plt.title("Distribution function for max. " + r"$\gamma$")
+plt.savefig('distribution_function.png')
+"""
 
 """
 # plot the second Sobol results (replace "omega/4" in keys with "gamma" for growth rate)
