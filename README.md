@@ -20,8 +20,8 @@ python run_uq.py
 ```
 The final plots (examples below) will be displayed once all the runs are complete. They will also be saved in the root folder of this project.
 
-![Mean frequencies $\omega_r/4$ and growth rates $\gamma$ plotted as a function of wavenumber $k_y\rho$. The error bars show standard deviations.](https://github.com/[baiway]/[MSc-project]/blob/[main]/first-actual-scan.png?raw=true)
+![Mean frequencies $\omega_r/4$ and growth rates $\gamma$ plotted as a function of wavenumber $k_y\rho$. The error bars show standard deviations.](https://github.com/baiway/MSc-project/blob/main/first-actual-scan.png?raw=true)
 
-![First order Sobol index of the frequency $\omega_r/4$ plotted as a function of wavenumber $k_y\rho$.](https://github.com/[baiway]/[MSc-project]/blob/[main]/first_Sobol_omega_attempt1.png?raw=true)
+![First order Sobol index of the frequency $\omega_r/4$ plotted as a function of wavenumber $k_y\rho$.](https://github.com/baiway/MSc-project/blob/main/first_Sobol_omega_attempt1.png?raw=true)
 
-![First order Sobol index of the growth rate $\gamma$ plotted as a function of wavenumber $k_y\rho$.](https://github.com/[baiway]/[MSc-project]/blob/[main]/first_Sobol_gamma_attempt1.png?raw=true)
+![First order Sobol index of the growth rate $\gamma$ plotted as a function of wavenumber $k_y\rho$.](https://github.com/baiway/MSc-project/blob/main/first_Sobol_gamma_attempt1.png?raw=true)
