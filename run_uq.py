@@ -182,7 +182,6 @@ if __name__ == "__main__":
     sobols_total_omega = R["results"]["sobols_total_omega"]
     sobols_total_gamma = R["results"]["sobols_total_gamma"]
 
-
     # Plot the calculated rates: mean with std deviation
     plt.figure(1)
     plt.plot(ky, omega, "o-", color="orange", label=r"$\overline{\omega}_r/4 \pm \sigma_{\omega_r/4}$")
@@ -269,18 +268,4 @@ plt.legend()
 plt.xlabel(r"$k_y\rho$")
 plt.ylabel("Second order Sobol index")
 plt.title("Second order Sobol indice for " + r"$\omega_r/4$");
-
-# plot the distributions
-plt.figure()
-for i, D in enumerate(results.raw_data['output_distributions']['te']):
-    _Te = np.linspace(D.lower[0], D.upper[0], 101)
-    _DF = D.pdf(_Te)
-    plt.loglog(_Te, _DF, 'b-', alpha=0.25)
-    plt.loglog(results.describe('te', 'mean')[i], np.interp(results.describe('te', 'mean')[i], _Te, _DF), 'bo')
-    plt.loglog(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i], np.interp(results.describe('te', 'mean')[i]-results.describe('te', 'std')[i], _Te, _DF), 'b*')
-    plt.loglog(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i], np.interp(results.describe('te', 'mean')[i]+results.describe('te', 'std')[i], _Te, _DF), 'b*')
-    plt.loglog(results.describe('te', '10%')[i],  np.interp(results.describe('te', '10%')[i], _Te, _DF), 'b+')
-    plt.loglog(results.describe('te', '90%')[i],  np.interp(results.describe('te', '90%')[i], _Te, _DF), 'b+')
-plt.xlabel('Te')
-plt.ylabel('distribution function');
 """
