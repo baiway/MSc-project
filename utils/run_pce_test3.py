@@ -4,6 +4,7 @@
 where I plotted the relative errors for each quantity, averaged across mode number. 
 """
 
+from concurrent.futures import ThreadPoolExecutor
 import time
 import chaospy as cp
 import numpy as np
@@ -58,7 +59,7 @@ def vary():
     }
     
 
-def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents/gs2/bin/gs2"):
+def run_campaign(pce_order=2, nprocs=4, batch_sampling=False, gs2_bin="/home/userfs/b/bc1264/Documents/gs2/bin/gs2"):
     """Main UQ loop. Sets up the campaign, the encoder and decoder,
     and tells EasyVVUQ how to execute EasyVVUQ.
 
@@ -77,12 +78,12 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     campaign = Campaign(name="itg_uq")
 
     encoder = GS2Encoder(template_filename="flsm_comb.in",
-                         target_filename="flsm_new.in")
+                            target_filename="flsm_new.in")
 
     decoder = GS2Decoder(target_filename="flsm_new.out.nc")
 
     execute = ExecuteLocal(f"nice -n 10 mpirun -n {nprocs} {gs2_bin} flsm_new.in > GS2_print.txt",
-                           stdout="GS2_print.txt")
+                            stdout="GS2_print.txt")
 
     actions = Actions(CreateRunDirectory(root="."),
                 Encode(encoder), execute, Decode(decoder))
@@ -96,23 +97,45 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     # Create the sampler & associate with campaign
     time_start = time.time()
     campaign.set_sampler(PCESampler(vary=vary(), 
-                         polynomial_order=pce_order))
+                            polynomial_order=pce_order))
     
     # Draw all samples (from finite set of samples)
     campaign.draw_samples()
     print(f"PCE order = {pce_order}")
+    print(f"nprocs = {nprocs}")
     print(f"Number of samples = {campaign.get_active_sampler().count}")
     time_end = time.time()
     times[2] = time_end - time_start
     print(f"Time for phase 2 (drawing samples) = {times[2]:.2f} s")
 
-    # Execute the campaign
-    # ensure nsamples * nprocs < number of cores if sequential=False
-    time_start = time.time()
-    campaign.execute(sequential=True).collate(progress_bar=True)     
-    time_end = time.time()
-    times[3] = time_end - time_start
-    print(f"Time for phase 3 (executing campaign) = {times[3]:.2f} s")
+    if batch_sampling:
+        # Batch sampling (experimental - 28/08/2022)
+        # num_samples = (1 + pce_order) ** len(vary()), so when
+        # len(vary()) == 2, batch_size = np.sqrt(num_samples) is a good choice
+        time_start = time.time()
+        num_samples = campaign.get_active_sampler().count
+        batch_size = np.sqrt(num_samples)
+        num_batches = int(num_samples/batch_size)
+
+        for batch in range(1, num_batches + 1):
+            time_start_block = time.time()
+            print(f"  Starting batch {batch} of {num_batches}...")
+            campaign.execute(nsamples=batch_size, pool=ThreadPoolExecutor(max_workers=batch_size), sequential=False).collate(progress_bar=True)
+            time_end_block = time.time()
+            print(f"  Time for batch {batch} = {(time_end_block-time_start_block):.2f} s")
+        
+        time_end = time.time()
+        times[3] = time_end - time_start
+        print(f"Time for phase 3 (executing campaign) = {times[3]:.2f} s")
+
+    else:
+        # Execute the campaign
+        # ensure nsamples * nprocs < number of cores if sequential=False
+        time_start = time.time()
+        campaign.execute(sequential=True).collate(progress_bar=True)     
+        time_end = time.time()
+        times[3] = time_end - time_start
+        print(f"Time for phase 3 (executing campaign) = {times[3]:.2f} s")
 
     # Get results
     time_start = time.time()
@@ -181,17 +204,12 @@ if __name__ == "__main__":
         R["results"], 
         R["times"], 
         R["pce_order"], 
-        R["number_of_samples"]) = run_campaign(pce_order, nprocs=16)
+        R["number_of_samples"]) = run_campaign(pce_order, nprocs=32, batch_sampling=True)
 
         all_results[pce_order] = R["results"]
-    
+    """
     with open(f"all_processed_results.pickle", "wb") as f:
         pickle.dump(all_results, f)
-
-    sobols_first_omega7 = all_results[7]["sobols_first_omega"]
-    sobols_first_gamma7 = all_results[7]["sobols_first_gamma"]
-    sobols_total_omega7 = all_results[7]["sobols_total_omega"]
-    sobols_total_gamma7 = all_results[7]["sobols_total_gamma"]
 
     xticks = [f"PO={p}" + "\n" f"runs={(p+1)**2}" for p in pce_orders[:-1]]
 
@@ -257,6 +275,6 @@ if __name__ == "__main__":
     plt.legend()
     plt.tight_layout()
     plt.show()
-
+    """
 
 
