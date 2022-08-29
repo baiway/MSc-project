@@ -94,6 +94,7 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     
     # Draw all samples (from finite set of samples)
     campaign.draw_samples()
+    print(f"nprocs = {nprocs}")
     print(f"PCE order = {pce_order}")
     print(f"Number of samples = {campaign.get_active_sampler().count}")
     time_end = time.time()
@@ -228,7 +229,7 @@ if __name__ == "__main__":
     plt.figure(4)
     for k1 in sobols_second_omega.keys():
         for k2 in sobols_second_omega[k1].keys():
-            p1, p2 = k1.split("::")[1], p2.split("::")[1]
+            p1, p2 = k1.split("::")[1], k2.split("::")[1]
             plt.plot(ky, sobols_second_omega[k1][k2], label=p1+"/"+p2)
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
@@ -240,7 +241,7 @@ if __name__ == "__main__":
     plt.figure(5)
     for k1 in sobols_second_gamma.keys():
         for k2 in sobols_second_gamma[k1].keys():
-            p1, p2 = k1.split("::")[1], p2.split("::")[1]
+            p1, p2 = k1.split("::")[1], k2.split("::")[1]
             plt.plot(ky, sobols_second_gamma[k1][k2], label=p1+"/"+p2)
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
@@ -270,32 +271,3 @@ if __name__ == "__main__":
 
     plt.show()
 
-
-"""
-# Plot the distribution functions for gamma
-# note: I'd like to only do this for the maximum growth rate
-plt.figure(6)
-i = np.argmax(gamma)
-distribution = R["results"].raw_data["output_distributions"]["gamma"].samples[i]
-pdf_kde_samples = cp.GaussianKDE(distribution)
-_gamma = np.linspace(pdf_kde_samples.lower, pdf_kde_samples.upper[0], 101)
-plt.loglog(_gamma, pdf_kde_samples.pdf(_gamma), "b-")
-plt.loglog(gamma[i], pdf_kde_samples.pdf(gamma[i]), "bo")
-
-plt.xlabel(r"$\gamma$" + " " + r"$[v_{thr}/a]$")
-plt.ylabel("Distribution function")
-plt.title("Distribution function for max. " + r"$\gamma$")
-plt.savefig('distribution_function.png')
-"""
-
-"""
-# plot the second Sobol results (replace "omega/4" in keys with "gamma" for growth rate)
-plt.figure()
-for k1 in R["results"].sobols_second()["omega/4"].keys():
-    for k2 in results.sobols_second()["omega/4"][k1].keys():
-        plt.plot(rho, results.sobols_second()["omega/4"][k1][k2], label=k1+"/"+k2)
-plt.legend()
-plt.xlabel(r"$k_y\rho$")
-plt.ylabel("Second order Sobol index")
-plt.title("Second order Sobol indice for " + r"$\omega_r/4$");
-"""
