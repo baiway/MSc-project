@@ -1,5 +1,4 @@
 from pathlib import Path
-import subprocess
 import f90nml
 import xarray as xr
 import logging
@@ -101,7 +100,7 @@ class GS2Decoder:
 
         results = {"ky": None, "omega/4": None, "gamma": None}
 
-        run_dir = Path(run_info["run_dir"])
+        run_dir = Path(run_info['run_dir'])
         output_filepath = run_dir / self.target_filename
 
         # Save results as lists of values rather than NumPy arrays (required by EasyVVUQ)

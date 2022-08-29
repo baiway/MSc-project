@@ -1,7 +1,6 @@
 import unittest
 import f90nml
 import numpy as np
-import xarray as xr
 from pathlib import Path
 from gs2uq import GS2Encoder, GS2Decoder
 
@@ -58,11 +57,6 @@ class TestUQIO(unittest.TestCase):
         self.assertEqual(results["ky"], ky)
         self.assertEqual(results["omega/4"], qtr_omegas)
         self.assertEqual(results["gamma"], gammas)
-        """
-        np.testing.assert_allclose(results["ky"], ky)
-        np.testing.assert_allclose(results["omega/4"], qtr_omegas)
-        np.testing.assert_allclose(results["gamma"], gammas)
-        """
 
         # Test GS2Decoder.sim_complete()
         self.assertEqual(decoder.sim_complete(run_info=run_info), True)
