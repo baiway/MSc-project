@@ -230,7 +230,7 @@ if __name__ == "__main__":
     for k1 in sobols_second_omega.keys():
         for k2 in sobols_second_omega[k1].keys():
             p1, p2 = k1.split("::")[1], k2.split("::")[1]
-            plt.plot(ky, sobols_second_omega[k1][k2], label=p1+"/"+p2)
+            plt.plot(ky, sobols_second_omega[k1][k2], "o-", label=p1+"/"+p2)
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("Second order Sobol index")
@@ -242,7 +242,7 @@ if __name__ == "__main__":
     for k1 in sobols_second_gamma.keys():
         for k2 in sobols_second_gamma[k1].keys():
             p1, p2 = k1.split("::")[1], k2.split("::")[1]
-            plt.plot(ky, sobols_second_gamma[k1][k2], label=p1+"/"+p2)
+            plt.plot(ky, sobols_second_gamma[k1][k2], "o-", label=p1+"/"+p2)
     plt.legend()
     plt.xlabel(r"$k_y\rho$")
     plt.ylabel("Second order Sobol index")
