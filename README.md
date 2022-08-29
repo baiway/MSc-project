@@ -10,11 +10,11 @@ Next, clone this repository:
 ```
 git clone https://github.com/baiway/MSc-project.git
 ```
-Run tests:
+Run tests (note: these only check that `GS2Encoder` and `GS2Decoder` in `gs2uq.py` work as intended):
 ```
-python test_gs2uq.py
+python test.py
 ```
-Ensure you check the arguments passed to `run_campaign()`. You'll need to change `gs2_bin` to your GS2 path. You may also wish to change `nprocs` and `pce_order` (only polynomial chaos sampling is supported). Once these are set, run the script with
+Ensure you check the arguments passed to `run_campaign()`. You'll need to change `gs2_bin` to the full path to your GS2 bin. You may also wish to change `nprocs` and `pce_order` to suitable values (I do not recommend going above `pce_order=5`). Once these are set, run the script with
 ```
 python run_uq.py
 ```
