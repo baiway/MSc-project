@@ -131,6 +131,8 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
     gamma_std = results.describe("gamma", "std") * (np.sqrt(2) / 2.2)
     sobols_first_omega = results.sobols_first()["omega/4"]
     sobols_first_gamma = results.sobols_first()["gamma"]
+    sobols_second_omega = results.sobols_second()["omega/4"]
+    sobols_second_gamma = results.sobols_second()["gamma"]
     sobols_total_omega = results.sobols_total()["omega/4"]
     sobols_total_gamma = results.sobols_total()["gamma"]
 
@@ -141,6 +143,8 @@ def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents
                          "gamma_std": gamma_std,
                          "sobols_first_omega": sobols_first_omega, 
                          "sobols_first_gamma": sobols_first_gamma,
+                         "sobols_second_omega": sobols_second_omega,
+                         "sobols_second_gamma": sobols_second_gamma,
                          "sobols_total_omega": sobols_total_omega,
                          "sobols_total_gamma": sobols_total_gamma}
 
@@ -179,6 +183,8 @@ if __name__ == "__main__":
     gamma_std = R["results"]["gamma_std"]
     sobols_first_omega = R["results"]["sobols_first_omega"]
     sobols_first_gamma = R["results"]["sobols_first_gamma"]
+    sobols_second_omega = R["results"]["sobols_second_omega"]
+    sobols_second_gamma = R["results"]["sobols_second_gamma"]
     sobols_total_omega = R["results"]["sobols_total_omega"]
     sobols_total_gamma = R["results"]["sobols_total_gamma"]
 
@@ -218,8 +224,32 @@ if __name__ == "__main__":
     plt.title("First order Sobol indices for " + r"$\gamma$")
     plt.savefig("sobols_first_gamma.png", dpi=300)
 
-    # Plot the total Sobol results for omega
+    # Plot the second order Sobol indices for omega
     plt.figure(4)
+    for k1 in sobols_second_omega.keys():
+        for k2 in sobols_second_omega[k1].keys():
+            p1, p2 = k1.split("::")[1], p2.split("::")[1]
+            plt.plot(ky, sobols_second_omega[k1][k2], label=p1+"/"+p2)
+    plt.legend()
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("Second order Sobol index")
+    plt.title("Second order Sobol indices for " + r"$\omega_r/4$")
+    plt.savefig("sobols_second_omega.png", dpi=300)
+
+    # Plot the second order Sobol indices for gamma
+    plt.figure(5)
+    for k1 in sobols_second_gamma.keys():
+        for k2 in sobols_second_gamma[k1].keys():
+            p1, p2 = k1.split("::")[1], p2.split("::")[1]
+            plt.plot(ky, sobols_second_gamma[k1][k2], label=p1+"/"+p2)
+    plt.legend()
+    plt.xlabel(r"$k_y\rho$")
+    plt.ylabel("Second order Sobol index")
+    plt.title("Second order Sobol indices for " + r"$\gamma$")
+    plt.savefig("sobols_second_gamma.png", dpi=300)
+
+    # Plot the total Sobol results for omega
+    plt.figure(6)
     for param in sobols_total_omega.keys(): 
         plt.plot(ky, sobols_total_omega[param], "o-", label=param.split("::")[1])
     plt.legend()
@@ -229,7 +259,7 @@ if __name__ == "__main__":
     plt.savefig("sobols_total_omega.png", dpi=300)
 
     # Plot the total Sobol results for gamma
-    plt.figure(5)
+    plt.figure(7)
     for param in sobols_total_gamma.keys(): 
         plt.plot(ky, sobols_total_gamma[param], "o-", label=param.split("::")[1])
     plt.legend()
