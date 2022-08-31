@@ -24,6 +24,7 @@ def params():
     See: https://gyrokinetics.gitlab.io/gs2/page/namelists/index.html 
     Only `type` and `default` are required by EasyVVUQ.
     """
+
     return {
         "species_parameters_1::fprim": {
             "type": "float", 
@@ -34,7 +35,17 @@ def params():
             "type": "float", 
             "min": 0.8*6.9, 
             "max": 1.2*6.9, 
-            "default": 6.9}
+            "default": 6.9},
+        "theta_grid_parameters::pk": {
+            "type": "float", 
+            "min": 0.8*1.44, 
+            "max": 1.2*1.44, 
+            "default": 1.44},
+        "theta_grid_parameters::shat": {
+            "type": "float", 
+            "min": 0.8*0.8, 
+            "max": 1.2*0.8, 
+            "default": 0.8}
     }
 
 def vary():
@@ -43,14 +54,15 @@ def vary():
             "group::param": cp.Distribution
         }
     using ChaosPy distributions. See: https://chaospy.readthedocs.io/en/master/user_guide/index.html 
-    
-    Other possible quantities include:
-     > list relevant quantities here
     """
+
     return {
         "species_parameters_1::fprim":   cp.Uniform(0.8 * 2.2, 1.2 * 2.2),  # +/- 20%
-        "species_parameters_1::tprim":    cp.Uniform(0.8 * 6.9, 1.2 * 6.9)
+        "species_parameters_1::tprim":    cp.Uniform(0.8 * 6.9, 1.2 * 6.9),
+        "theta_grid_parameters::pk":   cp.Uniform(0.8 * 1.44, 1.2 * 1.44),
+        "theta_grid_parameters::shat":    cp.Uniform(0.8 * 0.8, 1.2 * 0.8)
     }
+
     
 def run_campaign(pce_order=2, nprocs=4, gs2_bin="/home/userfs/b/bc1264/Documents/gs2/bin/gs2"):
     """Main UQ loop. Sets up the campaign, the encoder and decoder,
