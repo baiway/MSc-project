@@ -23,3 +23,12 @@ The final plots will be displayed once all the runs are complete. They will also
 ![Mean values of the real frequency $\omega_r/4$ and growth rate $\gamma$ for mode numbers $k_y\rho=0.05$ to $k_y\rho=0.50$. The error bars are the standard deviations in $\omega_r/4$ and $\gamma$ arising from varying the density gradient $\kappa_n$, temperature gradient $\kappa_T$, magnetic shear $\hat{s}$, and safety factor $q$ (through $p_k=2L_\mathrm{ref}/qR$) by $\pm 20\%$. The varying parameter space is sampled with PCE using polynomial order 3. A total of 256 samples were made; the full simulation took around 20 hours to complete on 16 processors.](https://github.com/baiway/MSc-project/blob/main/example_plots/fprim_tprim_pk_shat_means.png?raw=true)
 
 ![First, second and total Sobol indices associated with varying $\kappa_n$, $\kappa_T$, $\hat{s}$ and $p_k=2L_\mathrm{ref}/qR$ by $\pm 20\%$.](https://github.com/baiway/MSc-project/blob/main/example_plots/fprim_tprim_pk_shat_sobols.png?raw=true)
+
+<figure>
+  <img
+  src="https://github.com/baiway/MSc-project/blob/main/example_plots/fprim_tprim_pk_shat_means.png?raw=true"
+  alt="Dimits et al. plot with error bars.">
+  <figcaption>
+    Mean values of the real frequency $\omega_r/4$ and growth rate $\gamma$ for mode numbers $k_y\rho=0.05$ to $k_y\rho=0.50$. The error bars are the standard deviations in $\omega_r/4$ and $\gamma$ arising from varying the density gradient $\kappa_n$, temperature gradient $\kappa_T$, magnetic shear $\hat{s}$, and safety factor $q$ (through $p_k=2L_\mathrm{ref}/qR$) by $\pm 20\%$. The varying parameter space is sampled with PCE using polynomial order 3. A total of 256 samples were made; the full simulation took around 20 hours to complete on 16 processors.
+  </figcaption>
+</figure>
